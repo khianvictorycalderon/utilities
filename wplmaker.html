@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Create WPL File</title>
+  <style>
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Create WPL File</h1>
+  <form id="playlistForm">
+    <label for="playlistTitle">Playlist Title:</label>
+    <input type="text" id="playlistTitle" required>
+    <hr>
+    <label for="songs">Select Songs:</label>
+    <input type="file" id="songs" multiple accept=".mp3, .mp4">
+    <hr>
+    <button type="button" onclick="createWPL()">Generate WPL File</button>
+  </form>
+
+  <script>
+    function createWPL() {
+      const playlistTitle = document.getElementById("playlistTitle").value;
+      const selectedSongs = document.getElementById("songs").files;
+
+      if (!playlistTitle || selectedSongs.length === 0) {
+        alert("Please enter a playlist title and select at least one song.");
+        return;
+      }
+
+      const mediaFiles = Array.from(selectedSongs).map(file => file.name);
+
+      const wplContent = `<?wpl version="1.0"?>
+<smil>
+  <head>
+    <title>${playlistTitle}</title>
+  </head>
+  <body>
+    <seq>
+      ${mediaFiles.map(file => `<media src="${file}"/>`).join("\n")}
+    </seq>
+  </body>
+</smil>`;
+
+      const blob = new Blob([wplContent], { type: "application/vnd.ms-wpl" });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${playlistTitle}.wpl`;
+      document.body.appendChild(a);
+      a.click();
+
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>
